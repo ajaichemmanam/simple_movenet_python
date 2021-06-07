@@ -5,30 +5,32 @@ import cv2
 import pprint
 
 
-def main(model_name):
-    if model_name == "thunder":
-        model_path = "./thunder_saved_model/model_float32.onnx"
-        input_size = (256, 256)
-    elif model_name == "lightning":
-        model_path = "./lightning_saved_model/model_float32.onnx"
-        input_size = (192, 192)
-    model = onnx.load(model_path)
-    onnx.checker.check_model(model)
+class Model:
+    def __init__(self, name):
+        if name == "thunder":
+            model_path = "./thunder_saved_model/model_float32.onnx"
+            self.input_size = (256, 256)
+        elif name == "lightning":
+            model_path = "./lightning_saved_model/model_float32.onnx"
+            self.input_size = (192, 192)
+        self.model = onnx.load(model_path)
+        onnx.checker.check_model(self.model)
 
-    sess = onnxruntime.InferenceSession(model_path)
+        self.sess = onnxruntime.InferenceSession(model_path)
 
-    image = cv2.imread("test.png")
-    frame = cv2.resize(image, input_size)
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = np.expand_dims(frame, axis=0)
-    frame = frame.astype("float32")
+    def infer(self, image_path):
+        image = cv2.imread(image_path)
+        frame = cv2.resize(image, self.input_size)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = np.expand_dims(frame, axis=0)
+        frame = frame.astype("float32")
 
-    inputs = {sess.get_inputs()[0].name: frame}
-    outputs = sess.run(None, inputs)
+        inputs = {self.sess.get_inputs()[0].name: frame}
+        outputs = self.sess.run(None, inputs)
 
-    pprint.pprint(outputs)
+        pprint.pprint(outputs)
 
 
 if __name__ == "__main__":
-    model_name = "lightning"
-    main(model_name)
+    model = Model(name="thunder")
+    model.infer("test.png")
