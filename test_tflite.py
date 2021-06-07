@@ -7,6 +7,8 @@ import numpy as np
 
 import tensorflow.lite as tflite
 
+from visualisation_utils import visualise
+
 
 class Model:
     def __init__(self, name):
@@ -26,19 +28,31 @@ class Model:
         self.output_details = self.interpreter.get_output_details()
 
     def infer(self, image_path):
-        image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, self.input_size)
-        image = np.expand_dims(image, axis=0)
-        image = image.astype("float32")
+        image = cv2.imread(image_path)
+        frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, self.input_size)
+        frame = np.expand_dims(frame, axis=0)
+        frame = frame.astype("float32")
 
-        self.interpreter.set_tensor(self.input_details[0]["index"], image)
+        self.interpreter.set_tensor(self.input_details[0]["index"], frame)
         start_time = time.time()
         self.interpreter.invoke()
         stop_time = time.time()
         print("time: ", stop_time - start_time)
 
-        scores = self.interpreter.get_tensor(self.output_details[0]["index"])
-        pprint.pprint(scores)
+        outputs = self.interpreter.get_tensor(self.output_details[0]["index"])
+        outputs = np.squeeze(np.array(outputs))
+        pprint.pprint(outputs.shape)
+        pprint.pprint(outputs)
+
+        outputImage = visualise(
+            frame=image.copy(),
+            coords=outputs[:, [1, 0]] * [image.shape[1], image.shape[0]],
+            scores=outputs[:, 2],
+            score_thresh=0.1,
+        )
+        cv2.imshow("output", outputImage)
+        cv2.waitKey(0)
 
 
 if __name__ == "__main__":

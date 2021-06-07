@@ -13,9 +13,9 @@ A single person pose estimation model. Two variants
 
 Will be updated soon.
 
-## Demo
+## Output
 
-Will be updated soon.
+<img src="https://raw.githubusercontent.com/ajaichemmanam/simple_movenet_python/main/assets/output_thunder.png" width="200" height="200">
 
 ## Credits
 
